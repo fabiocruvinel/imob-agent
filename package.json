@@ -1,0 +1,9 @@
+{
+  "name": "imob-agent",
+  "version": "1.0.0",
+  "dependencies": {
+    "googleapis": "^105.0.0",
+    "node-fetch": "^3.3.2",
+    "twilio": "^4.20.0"
+  }
+}
