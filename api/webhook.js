@@ -6,11 +6,13 @@ export default async function handler(req, res) {
 
   if (req.method === "POST") {
 
-    const change = body?.entry?.[0]?.changes?.[0]
-    const message = change?.value?.messages?.[0]
+    const entry = body.entry?.[0]
+    const change = entry?.changes?.[0]
+    const value = change?.value
 
-    if (message) {
+    if (value?.messages) {
 
+      const message = value.messages[0]
       const from = message.from
       const text = message.text?.body || ""
 
@@ -29,14 +31,14 @@ export default async function handler(req, res) {
             to: from,
             type: "text",
             text: {
-              body: "Olá 👋\nSou o assistente virtual da imobiliária.\n\nDigite:\n1 - Comprar imóvel\n2 - Vender imóvel\n3 - Falar com corretor"
+              body: "Olá 👋 Sou o assistente virtual da imobiliária.\n\nDigite:\n1 - Comprar imóvel\n2 - Vender imóvel\n3 - Falar com corretor"
             }
           })
         }
       )
 
       const result = await response.text()
-      console.log("Resposta WhatsApp:", result)
+      console.log("Resposta da API:", result)
 
     }
 
