@@ -1,44 +1,62 @@
+import { handleMessage } from "../bot/engine.js"
+import { sendMessage } from "../services/whatsapp.js"
+
 export default async function handler(req, res) {
 
-  if (req.method === "GET") {
-    const mode = req.query["hub.mode"];
-    const token = req.query["hub.verify_token"];
-    const challenge = req.query["hub.challenge"];
+if(req.method === "GET"){
 
-    if (mode === "subscribe" && token === "liderconstrutora123") {
-      return res.status(200).send(challenge);
-    }
+const verify_token = "liderconstrutora123"
 
-    return res.sendStatus(403);
-  }
+const mode = req.query["hub.mode"]
+const token = req.query["hub.verify_token"]
+const challenge = req.query["hub.challenge"]
 
-  if (req.method === "POST") {
+if(mode === "subscribe" && token === verify_token){
+return res.status(200).send(challenge)
+}
 
-    const body = req.body;
+return res.sendStatus(403)
+}
 
-    console.log("WEBHOOK EVENT:", JSON.stringify(body, null, 2));
+if(req.method === "POST"){
 
-    if (body.object) {
+const body = req.body
 
-      const change = body.entry?.[0]?.changes?.[0]?.value;
+console.log("EVENT:", JSON.stringify(body))
 
-      // se for mensagem
-      if (change?.messages) {
-        const message = change.messages[0];
-        console.log("Mensagem recebida:", message);
-      }
+try{
 
-      // se for status
-      if (change?.statuses) {
-        const status = change.statuses[0];
-        console.log("Status da mensagem:", status.status);
-      }
+const change = body.entry?.[0]?.changes?.[0]?.value
 
-      return res.sendStatus(200);
-    }
+const message = change?.messages?.[0]
 
-    return res.sendStatus(404);
-  }
+if(!message) return res.sendStatus(200)
 
-  res.sendStatus(405);
+const phoneId = change.metadata.phone_number_id
+const from = message.from
+const text = message.text?.body || ""
+
+const reply = await handleMessage(text)
+
+if(reply){
+
+await sendMessage(
+phoneId,
+process.env.WHATSAPP_TOKEN,
+from,
+reply
+)
+
+}
+
+}catch(err){
+
+console.log("ERRO:", err)
+
+}
+
+return res.sendStatus(200)
+
+}
+
 }
