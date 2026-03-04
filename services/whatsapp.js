@@ -8,7 +8,7 @@ Authorization:`Bearer ${token}`,
 },
 body:JSON.stringify({
 messaging_product:"whatsapp",
-to,
+to:to,
 type:"text",
 text:{body:text}
 })
