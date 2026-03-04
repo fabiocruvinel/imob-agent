@@ -1,24 +1,44 @@
-export default function handler(req, res) {
-  // 1. VERIFICAÇÃO DO WEBHOOK (Meta Challenge)
-  if (req.method === "GET") {
-    const VERIFY_TOKEN = "liderconstrutora123"; 
+export default async function handler(req, res) {
 
+  if (req.method === "GET") {
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    if (mode === "subscribe" && token === "liderconstrutora123") {
       return res.status(200).send(challenge);
-    } else {
-      return res.status(403).send("Token inválido");
     }
+
+    return res.sendStatus(403);
   }
 
-  // 2. RECEBIMENTO DE MENSAGENS
   if (req.method === "POST") {
-    console.log("WEBHOOK EVENT:", JSON.stringify(req.body, null, 2));
-    return res.sendStatus(200);
+
+    const body = req.body;
+
+    console.log("WEBHOOK EVENT:", JSON.stringify(body, null, 2));
+
+    if (body.object) {
+
+      const change = body.entry?.[0]?.changes?.[0]?.value;
+
+      // se for mensagem
+      if (change?.messages) {
+        const message = change.messages[0];
+        console.log("Mensagem recebida:", message);
+      }
+
+      // se for status
+      if (change?.statuses) {
+        const status = change.statuses[0];
+        console.log("Status da mensagem:", status.status);
+      }
+
+      return res.sendStatus(200);
+    }
+
+    return res.sendStatus(404);
   }
 
-  res.sendStatus(404);
+  res.sendStatus(405);
 }
