@@ -1,62 +1,33 @@
-import { handleMessage } from "../bot/engine.js"
-import { sendMessage } from "../services/whatsapp.js"
-
 export default async function handler(req, res) {
 
-if(req.method === "GET"){
+  console.log("EVENT:", JSON.stringify(req.body))
 
-const verify_token = "liderconstrutora123"
+  if (req.method === "POST") {
 
-const mode = req.query["hub.mode"]
-const token = req.query["hub.verify_token"]
-const challenge = req.query["hub.challenge"]
+    const body = req.body
 
-if(mode === "subscribe" && token === verify_token){
-return res.status(200).send(challenge)
-}
+    if (body.object) {
 
-return res.sendStatus(403)
-}
+      const message =
+        body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
 
-if(req.method === "POST"){
+      if (message) {
 
-const body = req.body
+        const from = message.from
 
-console.log("EVENT:", JSON.stringify(body))
+        await sendWhatsAppMessage(
+          from,
+          "Olá 👋\n\nSou o assistente virtual da imobiliária.\n\n1️⃣ Comprar imóvel\n2️⃣ Vender imóvel\n3️⃣ Falar com corretor"
+        )
 
-try{
+      }
 
-const change = body.entry?.[0]?.changes?.[0]?.value
+      return res.status(200).end()
 
-const message = change?.messages?.[0]
+    }
 
-if(!message) return res.sendStatus(200)
+  }
 
-const phoneId = change.metadata.phone_number_id
-const from = message.from
-const text = message.text?.body || ""
-
-const reply = await handleMessage(text)
-
-if(reply){
-
-await sendMessage(
-phoneId,
-process.env.WHATSAPP_TOKEN,
-from,
-reply
-)
-
-}
-
-}catch(err){
-
-console.log("ERRO:", err)
-
-}
-
-return res.sendStatus(200)
-
-}
+  res.status(404).end()
 
 }
